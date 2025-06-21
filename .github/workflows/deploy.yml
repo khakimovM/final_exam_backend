@@ -1,0 +1,89 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Connect and deploy to server
+        run: |
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+
+          ssh -i key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << 'EOF'
+            set -e
+
+            cd /home/ubuntu/nest-app
+
+            echo "Writing .env file..."
+
+            cat <<EOT > .env
+            DATABASE_USER=${{ secrets.DATABASE_USER }}
+            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            DATABASE_DB=${{ secrets.DATABASE_DB }}
+            DATABASE_URL=postgresql://${{ secrets.DATABASE_USER }}:${{ secrets.DATABASE_PASSWORD }}@localhost:5432/${{ secrets.DATABASE_DB }}
+
+            PORT=4000
+            HOST=localhost
+
+            REDIS_PORT=6379
+            REDIS_HOST=redis
+
+            JWT_KEY=${{ secrets.JWT_KEY }}
+
+            ESKIZ_EMAIL=${{ secrets.ESKIZ_EMAIL }}
+            ESKIZ_PASSWORD=${{ secrets.ESKIZ_PASSWORD }}
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            HOST_EMAIL_URL=localhost
+            HOST_EMAIL=onboarding@resend.dev
+
+            SP_EMAIL=${{ secrets.SP_EMAIL }}
+            SP_USERNAME=${{ secrets.SP_USERNAME }}
+            SP_PHONE=${{ secrets.SP_PHONE }}
+            SP_PASSWORD=${{ secrets.SP_PASSWORD }}
+            EOT
+
+            echo "Pulling latest changes..."
+            git pull origin main
+
+            echo "Rebuilding containers..."
+            sudo docker compose down
+            sudo docker compose build --no-cache
+            sudo docker compose up -d
+
+            echo "Cleaning up old images..."
+            sudo docker image prune -f
+
+            echo "Deployment completed successfully!"
+          EOF
+
+          rm -f key.pem
+
+      - name: Verify deployment
+        run: |
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+
+          ssh -i key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << 'EOF'
+            echo "Checking container status..."
+            sudo docker compose ps
+            
+            echo "Checking application health..."
+            sleep 30
+            curl -f http://localhost || echo "Health check failed"
+          EOF
+
+          rm -f key.pem

@@ -35,7 +35,7 @@ export class ChannelController {
     const id = req['userId'];
     console.log(banner);
     const bannerUrl = banner?.filename
-      ? `http://localhost:4000/uploads/banners/${banner.filename}`
+      ? `http://${process.env.HOST}:${process.env.PORT}/uploads/banners/${banner.filename}`
       : '';
     console.log(bannerUrl);
     return await this.channelService.updateChannel(bannerUrl, body, id);
