@@ -28,7 +28,7 @@ export class RoleGuard implements CanActivate {
       this.reflect.get('roles', handClass);
     if (roles.includes(user.role)) {
       return true;
-    } else if (roles.includes('OWNER') && userId == paramId) {
+    } else if (roles.includes('OWNER') || userId == paramId) {
       return true;
     } else {
       throw new ForbiddenException('Sizga ruxsat etilmagan');

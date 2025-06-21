@@ -51,8 +51,26 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: UpdateUserDto,
   ) {
-    const avatarPath = `http://localhost:4000/uploads/avatars/${file.filename}`;
+    const avatarPath = file?.filename
+      ? `http://${process.env.HOST}:4000/uploads/avatars/${file.filename}`
+      : '';
     const userId = req['userId'];
     return await this.usersService.updateUserProfile(avatarPath, body, userId);
+  }
+
+  @Get('me/history')
+  async getWatchHistory(
+    @Req() req: Request,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const userId = req['userId'];
+    return await this.usersService.getWatchHistory(page, limit, userId);
+  }
+
+  @Delete('me/history')
+  async deleteMyHistory(@Req() req: Request) {
+    const userId = req['userId'];
+    return await this.usersService.clearMyHistory(userId);
   }
 }

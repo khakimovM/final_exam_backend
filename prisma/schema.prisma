@@ -21,13 +21,14 @@ model Users {
   is_phone_verified  Boolean   @default(true)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  channelName        String?
   channelBanner      String?
   channelDescription String?
   isBlocked          Boolean   @default(false)
   blockedUntil       DateTime?
   loginAttempts      Int       @default(0)
   subscribersCount   Int       @default(0)
-  totalViews         BigInt    @default(0)
+  totalViews         Int       @default(0)
 
   videos        Video[]
   comments      Comment[]
@@ -51,7 +52,7 @@ model Video {
   duration      Int // seconds
   status        VideoStatus @default(PROCESSING)
   visibility    Visibility  @default(PUBLIC)
-  viewsCount    BigInt      @default(0)
+  viewsCount    Int         @default(0)
   likesCount    Int         @default(0)
   dislikesCount Int         @default(0)
   createdAt     DateTime    @default(now())
@@ -82,6 +83,7 @@ model Comment {
   content    String
   likesCount Int      @default(0)
   createdAt  DateTime @default(now())
+  isPinned   Boolean  @default(false)
 
   // Relations
   authorId String
@@ -95,7 +97,6 @@ model Comment {
 
 // KEYINROQ QO'SHISH MUMKIN (REPLY SYSTEM):
 // - dislikesCount Int @default(0)
-// - isPinned Boolean @default(false)
 // - updatedAt DateTime @updatedAt
 // - parentId String?
 // - parent Comment? @relation("CommentReplies", fields: [parentId], references: [id])

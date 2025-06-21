@@ -3,7 +3,7 @@ import { IsOptional, IsString } from 'class-validator';
 export class UpdateChannelDto {
   @IsOptional()
   @IsString()
-  username: string;
+  channelName: string;
 
   @IsOptional()
   @IsString()
