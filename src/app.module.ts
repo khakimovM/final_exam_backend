@@ -9,9 +9,10 @@ import { ChannelModule } from './modules/channel/channel.module';
 import { VideoModule } from './modules/video/video.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
-  imports: [UsersModule, AuthModule, CoreModule, ChannelModule, VideoModule, CommentsModule, PlaylistModule],
+  imports: [UsersModule, AuthModule, CoreModule, ChannelModule, VideoModule, CommentsModule, PlaylistModule, AdminModule],
   controllers: [],
   providers: [
     {
